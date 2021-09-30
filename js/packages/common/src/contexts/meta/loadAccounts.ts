@@ -19,7 +19,6 @@ import {
   decodeMetadata,
   getAuctionExtended,
 } from '../../actions';
-import { uniqWith } from 'lodash';
 import { WhitelistedCreator } from '../../models/metaplex';
 import { Connection, PublicKey } from '@solana/web3.js';
 import {
@@ -38,7 +37,7 @@ import { ParsedAccount } from '../accounts/types';
 import { getEmptyMetaState } from './getEmptyMetaState';
 import { getMultipleAccounts } from '../accounts/getMultipleAccounts';
 import { getProgramAccounts } from './web3';
-import { createPipelineExecutor } from '../../utils/createPipelineExecutor';
+import { createPipelineExecutor } from './createPipelineExecutor';
 
 export const USE_SPEED_RUN = false;
 const WHITELISTED_METADATA = ['98vYFjBYS9TguUMWQRPjy2SZuxKuUMcqR4vnQiLjZbte'];
@@ -272,13 +271,6 @@ export const loadAccounts = async (connection: Connection) => {
   const updateState = makeSetter(state);
   const forEachAccount = processingAccounts(updateState);
 
-  const forEach =
-    (fn: ProcessAccountsFunc) => async (accounts: AccountAndPubkey[]) => {
-      for (const account of accounts) {
-        await fn(account, updateState);
-      }
-    };
-
   const loadVaults = () =>
     getProgramAccounts(connection, VAULT_ID).then(
       forEachAccount(processVaultData),
@@ -298,7 +290,7 @@ export const loadAccounts = async (connection: Connection) => {
           dataSize: MAX_WHITELISTED_CREATOR_SIZE,
         },
       ],
-    }).then(forEach(processMetaplexAccounts));
+    }).then(forEachAccount(processMetaplexAccounts));
   const loadMetadata = () =>
     pullMetadataByCreators(connection, state, updateState);
   const loadEditions = () => pullEditions(connection, updateState, state);
@@ -312,11 +304,7 @@ export const loadAccounts = async (connection: Connection) => {
 
   await Promise.all(loading);
 
-  state.metadata = uniqWith(
-    state.metadata,
-    (a: ParsedAccount<Metadata>, b: ParsedAccount<Metadata>) =>
-      a.pubkey === b.pubkey,
-  );
+  console.log('Metadata size', state.metadata.length);
 
   return state;
 };
