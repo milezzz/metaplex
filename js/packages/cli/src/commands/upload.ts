@@ -125,7 +125,7 @@ export async function upload(
       if (!link) {
         try {
           if (storage === 'arweave') {
-            link = await arweaveUpload(
+            /*link = await arweaveUpload(
               walletKeyPair,
               anchorProgram,
               env,
@@ -133,9 +133,11 @@ export async function upload(
               manifestBuffer,
               manifest,
               index,
-            );
+            );*/
+            link = 'https://nft.rarewojak.com/'+ index + "/" + index + ".json";
           } else if (storage === 'ipfs') {
-            link = await ipfsUpload(ipfsCredentials, image, manifestBuffer);
+            //link = await ipfsUpload(ipfsCredentials, image, manifestBuffer);
+            link = 'https://nft.rarewojak.com/'+ index + "/" + index + ".json";
           }
 
           if (link) {
